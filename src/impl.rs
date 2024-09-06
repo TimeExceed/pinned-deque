@@ -3,7 +3,7 @@ use std::{pin::Pin, collections::VecDeque, mem::*};
 
 pub struct PinnedDeque<T: Sized, const CAP_PER_PAGE: usize> {
     size: usize,
-    used: VecDeque<Box<Page<T, CAP_PER_PAGE>>>,
+    pub(crate) used: VecDeque<Box<Page<T, CAP_PER_PAGE>>>,
     freed: Vec<Box<Page<T, CAP_PER_PAGE>>>,
 }
 
@@ -213,9 +213,9 @@ where
     }
 }
 
-struct Page<T: Sized, const CAP_PER_PAGE: usize> {
-    start: *mut MaybeUninit<T>,
-    end: *mut MaybeUninit<T>,
+pub(crate) struct Page<T: Sized, const CAP_PER_PAGE: usize> {
+    pub(crate) start: *mut MaybeUninit<T>,
+    pub(crate) end: *mut MaybeUninit<T>,
     elems: [MaybeUninit<T>; CAP_PER_PAGE],
 }
 
