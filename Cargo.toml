@@ -1,11 +1,17 @@
 [package]
 name = "pinned-deque"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+
+[[bench]]
+name = "benches"
+harness = false
 
 [dependencies]
 
 [dev-dependencies]
+criterion = "0.5"
+jemallocator = "0.5"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
-rs_quickcheck_util = "0.2"
+
