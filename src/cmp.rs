@@ -1,7 +1,7 @@
 use crate::*;
 use std::cmp::*;
 
-impl<T, const CAP_PER_PAGE: usize> PartialOrd for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> PartialOrd for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + PartialOrd,
 {
@@ -29,7 +29,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> PartialEq for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> PartialEq for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + PartialEq,
 {
@@ -52,7 +52,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> Ord for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> Ord for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + Ord,
 {
@@ -61,7 +61,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> Eq for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> Eq for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + Eq,
 {}

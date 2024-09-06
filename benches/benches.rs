@@ -22,7 +22,7 @@ fn push_back(c: &mut Criterion) {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
                     // For a 4KB page, 510 u64's are allowed.
-                    let mut trial = Deque::<u64, 510>::new();
+                    let mut trial = PinnedDeque::<u64, 510>::new();
                     let start = Instant::now();
                     for _ in 0..*i {
                         trial.push_back(0);
@@ -75,7 +75,7 @@ fn push_front(c: &mut Criterion) {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
                     // For a 4KB page, 510 u64's are allowed.
-                    let mut trial = Deque::<u64, 510>::new();
+                    let mut trial = PinnedDeque::<u64, 510>::new();
                     let start = Instant::now();
                     for _ in 0..*i {
                         trial.push_front(0);
@@ -110,7 +110,7 @@ fn get_mid(c: &mut Criterion) {
     group.plot_config(plot_config);
     for n in SIZES.iter() {
         // For a 4KB page, 510 u64's are allowed.
-        let pinned: Deque<u64, 510> = (0..*n).map(|x| x as u64).collect();
+        let pinned: PinnedDeque<u64, 510> = (0..*n).map(|x| x as u64).collect();
         let vecdeque: VecDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vec: Vec<u64> = (0..*n).map(|x| x as u64).collect();
         let mid_idx = *n / 2;
@@ -140,7 +140,7 @@ fn iter(c: &mut Criterion) {
     group.plot_config(plot_config);
     for n in SIZES.iter() {
         // For a 4KB page, 510 u64's are allowed.
-        let pinned: Deque<u64, 510> = (0..*n).map(|x| x as u64).collect();
+        let pinned: PinnedDeque<u64, 510> = (0..*n).map(|x| x as u64).collect();
         let vecdeque: VecDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vec: Vec<u64> = (0..*n).map(|x| x as u64).collect();
         group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n,
@@ -175,7 +175,7 @@ fn iter_backwards(c: &mut Criterion) {
     group.plot_config(plot_config);
     for n in SIZES.iter() {
         // For a 4KB page, 510 u64's are allowed.
-        let pinned: Deque<u64, 510> = (0..*n).map(|x| x as u64).collect();
+        let pinned: PinnedDeque<u64, 510> = (0..*n).map(|x| x as u64).collect();
         let vecdeque: VecDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vec: Vec<u64> = (0..*n).map(|x| x as u64).collect();
         group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n,

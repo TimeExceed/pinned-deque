@@ -3,16 +3,16 @@ use std::{iter::*, marker::PhantomData, pin::Pin};
 
 #[derive(Clone)]
 pub struct Iter<'a, T: Sized, const CAP_PER_PAGE: usize> {
-    underlying: &'a Deque<T, CAP_PER_PAGE>,
+    underlying: &'a PinnedDeque<T, CAP_PER_PAGE>,
     front_idx: usize,
     back_idx: usize,
 }
 
 pub struct IterMut<'a, T: Sized, const CAP_PER_PAGE: usize> {
-    underlying: *mut Deque<T, CAP_PER_PAGE>,
+    underlying: *mut PinnedDeque<T, CAP_PER_PAGE>,
     front_idx: usize,
     back_idx: usize,
-    _ph: PhantomData<&'a mut Deque<T, CAP_PER_PAGE>>,
+    _ph: PhantomData<&'a mut PinnedDeque<T, CAP_PER_PAGE>>,
 }
 
 impl<'a, T, const CAP_PER_PAGE: usize> Iterator for Iter<'a, T, CAP_PER_PAGE>
@@ -103,7 +103,7 @@ impl<'a, T, const CAP_PER_PAGE: usize> Iter<'a, T, CAP_PER_PAGE>
 where
     T: Sized,
 {
-    pub(crate) fn new(deque: &'a Deque<T, CAP_PER_PAGE>) -> Self {
+    pub(crate) fn new(deque: &'a PinnedDeque<T, CAP_PER_PAGE>) -> Self {
         Self {
             underlying: deque,
             front_idx: 0,
@@ -116,7 +116,7 @@ impl<'a, T, const CAP_PER_PAGE: usize> IterMut<'a, T, CAP_PER_PAGE>
 where
     T: Sized,
 {
-    pub(crate) fn new(deque: &'a mut Deque<T, CAP_PER_PAGE>) -> Self {
+    pub(crate) fn new(deque: &'a mut PinnedDeque<T, CAP_PER_PAGE>) -> Self {
         Self {
             underlying: deque,
             front_idx: 0,
@@ -125,7 +125,7 @@ where
         }
     }
 
-    fn as_mut(&self) -> &'a mut Deque<T, CAP_PER_PAGE> {
+    fn as_mut(&self) -> &'a mut PinnedDeque<T, CAP_PER_PAGE> {
         unsafe {
             &mut *self.underlying
         }

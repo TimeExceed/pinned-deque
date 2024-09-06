@@ -1,6 +1,6 @@
 use crate::*;
 
-impl<T, const CAP_PER_PAGE: usize> Default for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> Default for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized,
 {
@@ -9,7 +9,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> std::fmt::Debug for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> std::fmt::Debug for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + std::fmt::Debug,
 {
@@ -27,7 +27,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> std::iter::Extend<T> for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> std::iter::Extend<T> for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized,
 {
@@ -41,7 +41,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> From<&[T]> for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> From<&[T]> for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + Clone,
 {
@@ -50,7 +50,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize, const N: usize> From<[T; N]> for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize, const N: usize> From<[T; N]> for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized,
 {
@@ -59,7 +59,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> From<Vec<T>> for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> From<Vec<T>> for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized,
 {
@@ -68,7 +68,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> FromIterator<T> for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> FromIterator<T> for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized,
 {
@@ -83,7 +83,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> Clone for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> Clone for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized + Clone,
 {

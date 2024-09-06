@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 
 #[test]
 fn itermut_mutability() {
-    let mut trial = Deque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize, 2>::new();
     trial.push_back(0);
     trial.push_back(1);
     trial.push_back(2);
@@ -192,8 +192,8 @@ fn ops_to_oracle(ops: &[Op]) -> VecDeque<usize> {
     res
 }
 
-fn ops_to_trial(ops: &[Op]) -> Deque<usize, 2> {
-    let mut res = Deque::new();
+fn ops_to_trial(ops: &[Op]) -> PinnedDeque<usize, 2> {
+    let mut res = PinnedDeque::new();
     for op in ops.iter() {
         match op {
             Op::PopBack => {

@@ -6,7 +6,7 @@ use std::collections::VecDeque;
 #[quickcheck]
 fn basic_ops(ops: Vec<Op>) {
     let mut oracle = VecDeque::new();
-    let mut trial = Deque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize, 2>::new();
     for op in ops.into_iter() {
         match op {
             Op::PopBack => {
@@ -57,7 +57,7 @@ fn drop_elems_0() {
     let mut buf = String::new();
     {
         use std::fmt::Write;
-        let mut trial = Deque::<A<String>, 2>::new();
+        let mut trial = PinnedDeque::<A<String>, 2>::new();
         trial.push_back(A {
             buf: &mut buf,
             id: "0".to_owned(),
@@ -74,7 +74,7 @@ fn drop_elems_1() {
     let mut buf = String::new();
     {
         use std::fmt::Write;
-        let mut trial = Deque::<A<String>, 2>::new();
+        let mut trial = PinnedDeque::<A<String>, 2>::new();
         trial.push_back(A {
             buf: &mut buf,
             id: "0".to_owned(),
@@ -95,7 +95,7 @@ fn clear() {
     let mut buf = String::new();
     {
         use std::fmt::Write;
-        let mut trial = Deque::<A<String>, 2>::new();
+        let mut trial = PinnedDeque::<A<String>, 2>::new();
         trial.push_back(A {
             buf: &mut buf,
             id: "0".to_owned(),
@@ -123,7 +123,7 @@ impl<W: std::fmt::Write> Drop for A<W> {
 
 #[test]
 fn get_mut() {
-    let mut trial = Deque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize, 2>::new();
     trial.push_back(0);
     *trial.get_mut(0).unwrap() = 1;
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
@@ -132,7 +132,7 @@ fn get_mut() {
 
 #[test]
 fn back_mut() {
-    let mut trial = Deque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize, 2>::new();
     trial.push_back(0);
     *trial.back_mut().unwrap() = 1;
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
@@ -141,7 +141,7 @@ fn back_mut() {
 
 #[test]
 fn front_mut() {
-    let mut trial = Deque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize, 2>::new();
     trial.push_back(0);
     *trial.front_mut().unwrap() = 1;
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();

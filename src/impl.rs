@@ -1,13 +1,13 @@
 use crate::*;
 use std::{pin::Pin, collections::VecDeque, mem::*};
 
-pub struct Deque<T: Sized, const CAP_PER_PAGE: usize> {
+pub struct PinnedDeque<T: Sized, const CAP_PER_PAGE: usize> {
     size: usize,
     used: VecDeque<Box<Page<T, CAP_PER_PAGE>>>,
     freed: Vec<Box<Page<T, CAP_PER_PAGE>>>,
 }
 
-impl<T, const CAP_PER_PAGE: usize> Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized,
 {
@@ -204,7 +204,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> Drop for Deque<T, CAP_PER_PAGE>
+impl<T, const CAP_PER_PAGE: usize> Drop for PinnedDeque<T, CAP_PER_PAGE>
 where
     T: Sized
 {

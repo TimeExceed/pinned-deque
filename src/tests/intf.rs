@@ -5,7 +5,7 @@ use std::collections::*;
 #[quickcheck]
 fn debug(a: Vec<usize>) {
     let oracle: VecDeque<_> = a.iter().copied().collect();
-    let trial: Deque<_, 2> = a.iter().copied().collect();
+    let trial: PinnedDeque<_, 2> = a.iter().copied().collect();
     assert_eq!(format!("{trial:?}"), format!("{oracle:?}"));
 }
 
@@ -17,7 +17,7 @@ fn extend(a: Vec<usize>, b: Vec<usize>) {
         oracle
     };
     let trial = {
-        let mut trial: Deque<_, 2> = a.iter().copied().collect();
+        let mut trial: PinnedDeque<_, 2> = a.iter().copied().collect();
         trial.extend(b.iter().copied());
         trial
     };
@@ -26,25 +26,25 @@ fn extend(a: Vec<usize>, b: Vec<usize>) {
 
 #[quickcheck]
 fn from_slice_ref(a: Vec<usize>) {
-    let trial: Deque<usize, 2> = a.as_slice().into();
+    let trial: PinnedDeque<usize, 2> = a.as_slice().into();
     assert_eq!(format!("{trial:?}"), format!("{a:?}"));
 }
 
 #[test]
 fn from_slice() {
-    let trial: Deque<_, 2> = [1, 2, 3].into();
+    let trial: PinnedDeque<_, 2> = [1, 2, 3].into();
     assert_eq!(format!("{trial:?}"), "[1, 2, 3]");
 }
 
 #[quickcheck]
 fn from_vec(a: Vec<usize>) {
-    let trial: Deque<_, 2> = a.clone().into();
+    let trial: PinnedDeque<_, 2> = a.clone().into();
     assert_eq!(format!("{trial:?}"), format!("{a:?}"));
 }
 
 #[test]
 fn clone() {
-    let origin: Deque<A, 2> = [A("origin".to_owned())].into();
+    let origin: PinnedDeque<A, 2> = [A("origin".to_owned())].into();
     let cloned = origin.clone();
     assert_eq!(format!("{cloned:?}"), "[cloned_origin]");
 }
