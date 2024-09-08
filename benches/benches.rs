@@ -115,17 +115,17 @@ fn get_mid(c: &mut Criterion) {
         let mid_idx = *n / 2;
         group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n,
             |b, _| b.iter(|| {
-                let _ = pinned.get(black_box(mid_idx));
+                black_box(pinned.get(mid_idx));
             })
         );
         group.bench_with_input(BenchmarkId::new("VecDeque", n), n,
             |b, _| b.iter(|| {
-                let _ = vecdeque.get(black_box(mid_idx));
+                black_box(vecdeque.get(mid_idx));
             })
         );
         group.bench_with_input(BenchmarkId::new("Vec", n), n,
             |b, _| b.iter(|| {
-                let _ = vec.get(black_box(mid_idx));
+                black_box(vec.get(mid_idx));
             })
         );
     }
