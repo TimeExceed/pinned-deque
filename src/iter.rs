@@ -1,5 +1,5 @@
 use crate::*;
-use std::{iter::*, marker::PhantomData, pin::Pin, collections::*, mem::*, ptr};
+use std::{collections::*, iter::*, marker::PhantomData, mem::*, pin::Pin, ptr};
 
 #[derive(Clone)]
 pub struct Iter<'a, T: Sized, const CAP_PER_PAGE: usize> {
@@ -32,7 +32,9 @@ where
             None
         } else {
             self.size -= 1;
-            if self.front_page.is_null() || self.front_elem == unsafe {&*self.front_page}.end as *const _ {
+            if self.front_page.is_null()
+                || self.front_elem == unsafe { &*self.front_page }.end as *const _
+            {
                 self.front_page = if let Some(page) = self.page_iter.next() {
                     page.as_ref()
                 } else {
@@ -70,7 +72,7 @@ where
             None
         } else {
             self.size -= 1;
-            if self.front_page.is_null() || self.front_elem == unsafe {&*self.front_page}.end {
+            if self.front_page.is_null() || self.front_elem == unsafe { &*self.front_page }.end {
                 self.front_page = if let Some(page) = self.page_iter.next() {
                     page.as_mut()
                 } else {
@@ -106,7 +108,9 @@ where
             None
         } else {
             self.size -= 1;
-            if self.back_page.is_null() || unsafe {&*self.back_page}.start as *const _ == self.back_elem {
+            if self.back_page.is_null()
+                || unsafe { &*self.back_page }.start as *const _ == self.back_elem
+            {
                 self.back_page = if let Some(page) = self.page_iter.next_back() {
                     page.as_ref()
                 } else {
@@ -137,7 +141,7 @@ where
             None
         } else {
             self.size -= 1;
-            if self.back_page.is_null() || unsafe {&*self.back_page}.start == self.back_elem {
+            if self.back_page.is_null() || unsafe { &*self.back_page }.start == self.back_elem {
                 self.back_page = if let Some(page) = self.page_iter.next_back() {
                     page.as_mut()
                 } else {
@@ -159,15 +163,13 @@ where
     }
 }
 
-impl<'a, T, const CAP_PER_PAGE: usize> ExactSizeIterator for Iter<'a, T, CAP_PER_PAGE>
-where
-    T: Sized,
+impl<'a, T, const CAP_PER_PAGE: usize> ExactSizeIterator for Iter<'a, T, CAP_PER_PAGE> where T: Sized
 {}
 
-impl<'a, T, const CAP_PER_PAGE: usize> ExactSizeIterator for IterMut<'a, T, CAP_PER_PAGE>
-where
-    T: Sized,
-{}
+impl<'a, T, const CAP_PER_PAGE: usize> ExactSizeIterator for IterMut<'a, T, CAP_PER_PAGE> where
+    T: Sized
+{
+}
 
 impl<'a, T, const CAP_PER_PAGE: usize> Iter<'a, T, CAP_PER_PAGE>
 where
@@ -197,8 +199,7 @@ where
             front_elem: ptr::null_mut(),
             back_page: ptr::null_mut(),
             back_elem: ptr::null_mut(),
-            _ph: PhantomData{},
+            _ph: PhantomData {},
         }
     }
 }
-

@@ -1,5 +1,5 @@
-use crate::*;
 use super::*;
+use crate::*;
 use quickcheck_macros::*;
 use std::collections::VecDeque;
 
@@ -9,10 +9,9 @@ fn itermut_mutability() {
     trial.push_back(0);
     trial.push_back(1);
     trial.push_back(2);
-    trial.iter_mut()
-        .for_each(|x| {
-            *x.get_mut() = *x * 2;
-        });
+    trial.iter_mut().for_each(|x| {
+        *x.get_mut() = *x * 2;
+    });
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
     assert_eq!(trial, vec![0, 2, 4]);
 }

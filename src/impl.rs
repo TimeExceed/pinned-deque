@@ -1,5 +1,5 @@
 use crate::*;
-use std::{pin::Pin, collections::VecDeque, mem::*};
+use std::{collections::VecDeque, mem::*, pin::Pin};
 
 pub struct PinnedDeque<T: Sized, const CAP_PER_PAGE: usize> {
     size: usize,
@@ -89,7 +89,7 @@ where
         self.used.push_front(new_page);
     }
 
-    pub fn pop_back(&mut self) -> bool {
+    pub fn pop_back(&mut self) -> Option<()> {
         if let Some(last_page) = self.used.back_mut() {
             last_page.pop_back();
             if last_page.len() == 0 {
@@ -97,13 +97,13 @@ where
                 self.recycle(last_page);
             }
             self.size -= 1;
-            true
+            Some(())
         } else {
-            false
+            None
         }
     }
 
-    pub fn pop_front(&mut self) -> bool {
+    pub fn pop_front(&mut self) -> Option<()> {
         if let Some(first_page) = self.used.front_mut() {
             first_page.pop_front();
             if first_page.len() == 0 {
@@ -111,9 +111,9 @@ where
                 self.recycle(first_page);
             }
             self.size -= 1;
-            true
+            Some(())
         } else {
-            false
+            None
         }
     }
 
@@ -130,7 +130,9 @@ where
     }
 
     pub fn front_mut(&mut self) -> Option<Pin<&mut T>> {
-        self.used.front_mut().map(|first_page| first_page.front_mut())
+        self.used
+            .front_mut()
+            .map(|first_page| first_page.front_mut())
     }
 
     pub fn clear(&mut self) {
@@ -162,9 +164,7 @@ where
         }
         let used: *mut _ = &mut self.used;
         {
-            let used = unsafe {
-                &mut *used
-            };
+            let used = unsafe { &mut *used };
             let first_page = used.front_mut().unwrap();
             if idx < first_page.len() {
                 return Some(first_page.get_mut(idx));
@@ -175,9 +175,7 @@ where
         let n = idx / CAP_PER_PAGE;
         let offset = idx % CAP_PER_PAGE;
         let target_page = {
-            let used = unsafe {
-                &mut *used
-            };
+            let used = unsafe { &mut *used };
             &mut used[n + 1]
         };
         Some(target_page.get_mut(offset))
@@ -206,180 +204,9 @@ where
 
 impl<T, const CAP_PER_PAGE: usize> Drop for PinnedDeque<T, CAP_PER_PAGE>
 where
-    T: Sized
+    T: Sized,
 {
     fn drop(&mut self) {
         self.clear();
-    }
-}
-
-pub(crate) struct Page<T: Sized, const CAP_PER_PAGE: usize> {
-    pub(crate) start: *mut MaybeUninit<T>,
-    pub(crate) end: *mut MaybeUninit<T>,
-    elems: [MaybeUninit<T>; CAP_PER_PAGE],
-}
-
-impl<T, const CAP_PER_PAGE: usize> Page<T, CAP_PER_PAGE>
-where
-    T: Sized,
-{
-    fn new() -> Box<Self> {
-        let mut res = Box::new(Self {
-            start: std::ptr::null_mut(),
-            end: std::ptr::null_mut(),
-            elems: unsafe { MaybeUninit::uninit().assume_init() },
-        });
-        res.reset_for_back_insertion();
-        res
-    }
-
-    fn reset_for_front_insertion(&mut self) {
-        let last_ptr = self.last_ptr() as *mut _;
-        self.start = last_ptr;
-        self.end = last_ptr;
-    }
-
-    fn reset_for_back_insertion(&mut self) {
-        let first_ptr = self.first_ptr() as *mut _;
-        self.start = first_ptr;
-        self.end = first_ptr;
-    }
-
-    fn reserve_front(&mut self) -> Option<&mut MaybeUninit<T>> {
-        if self.start > self.first_ptr() as *mut _ {
-            unsafe {
-                let res = self.start.wrapping_offset(-1);
-                self.start = res;
-                Some(&mut *res)
-            }
-        } else {
-            None
-        }
-    }
-
-    fn reserve_back(&mut self) -> Option<&mut MaybeUninit<T>> {
-        if self.end < self.last_ptr() as *mut _ {
-            unsafe {
-                let res = self.end;
-                self.end = res.wrapping_add(1);
-                Some(&mut *res)
-            }
-        } else {
-            None
-        }
-    }
-
-    fn first_ptr(&self) -> *const MaybeUninit<T> {
-        &self.elems[0]
-    }
-
-    fn last_ptr(&self) -> *const MaybeUninit<T> {
-        self.first_ptr().wrapping_add(CAP_PER_PAGE)
-    }
-
-    fn len(&self) -> usize {
-        assert!(self.start <= self.end);
-        let res = unsafe {
-            self.end.offset_from(self.start)
-        };
-        res as usize
-    }
-
-    fn get(&self, idx: usize) -> Pin<&T> {
-        unsafe {
-            let res = self.start.wrapping_add(idx);
-            assert!(res < self.end);
-            let res: &MaybeUninit<T> = &*(res as *const _);
-            Pin::new_unchecked(res.assume_init_ref())
-        }
-    }
-
-    fn get_mut(&mut self, idx: usize) -> Pin<&mut T> {
-        unsafe {
-            let res = self.start.wrapping_add(idx);
-            assert!(res < self.end);
-            let res: &mut MaybeUninit<T> = &mut *res;
-            Pin::new_unchecked(res.assume_init_mut())
-        }
-    }
-
-    fn front(&self) -> Pin<&T> {
-        assert!(self.end > self.start);
-        unsafe {
-            let res: &MaybeUninit<T> = &*(self.start as *const _);
-            Pin::new_unchecked(res.assume_init_ref())
-        }
-    }
-
-    fn back(&self) -> Pin<&T> {
-        assert!(self.end > self.start);
-        unsafe {
-            let res = self.end.wrapping_offset(-1);
-            let res: &MaybeUninit<T> = &*(res as *const _);
-            Pin::new_unchecked(res.assume_init_ref())
-        }
-    }
-
-    fn front_mut(&mut self) -> Pin<&mut T> {
-        assert!(self.end > self.start);
-        unsafe {
-            let res = &mut *self.start;
-            Pin::new_unchecked(res.assume_init_mut())
-        }
-    }
-
-    fn back_mut(&mut self) -> Pin<&mut T> {
-        assert!(self.end > self.start);
-        unsafe {
-            let res = self.end.wrapping_offset(-1);
-            let res = &mut *res;
-            Pin::new_unchecked(res.assume_init_mut())
-        }
-    }
-
-    fn pop_front(&mut self) {
-        assert!(self.end > self.start);
-        unsafe {
-            let res = &mut *self.start;
-            self.start = self.start.wrapping_add(1);
-            res.assume_init_drop();
-        }
-    }
-
-    fn pop_back(&mut self) {
-        assert!(self.end > self.start);
-        unsafe {
-            self.end = self.end.wrapping_offset(-1);
-            let res = &mut *self.end;
-            res.assume_init_drop();
-        }
-    }
-
-    fn front_capacity(&self) -> usize {
-        let first_ptr = self.first_ptr() as *mut _;
-        assert!(first_ptr <= self.start);
-        unsafe {
-            self.start.offset_from(first_ptr) as usize
-        }
-    }
-
-    fn back_capacity(&self) -> usize {
-        let last_ptr = self.last_ptr() as *mut _;
-        assert!(self.end <= last_ptr);
-        unsafe {
-            last_ptr.offset_from(self.end) as usize
-        }
-    }
-
-    fn drop_all(&mut self) {
-        assert!(self.start <= self.end);
-        let mut ptr = self.start;
-        while ptr < self.end {
-            unsafe {
-                let obj: &mut MaybeUninit<T> = &mut *ptr;
-                obj.assume_init_drop();
-            }
-            ptr = ptr.wrapping_add(1);
-        }
     }
 }

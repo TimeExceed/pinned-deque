@@ -24,7 +24,7 @@ where
             (Some(_), None) => Some(Ordering::Greater),
             (None, Some(_)) => Some(Ordering::Less),
             (None, None) => Some(Ordering::Equal),
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -34,6 +34,9 @@ where
     T: Sized + PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
+        if self.len() != other.len() {
+            return false;
+        }
         let mut it_a = self.iter();
         let mut it_b = other.iter();
         loop {
@@ -48,7 +51,7 @@ where
                 return false;
             }
         }
-        it_a.next().is_none() && it_b.next().is_none()
+        true
     }
 }
 
@@ -61,7 +64,4 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> Eq for PinnedDeque<T, CAP_PER_PAGE>
-where
-    T: Sized + Eq,
-{}
+impl<T, const CAP_PER_PAGE: usize> Eq for PinnedDeque<T, CAP_PER_PAGE> where T: Sized + Eq {}

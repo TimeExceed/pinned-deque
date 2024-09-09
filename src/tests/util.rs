@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone)]
 pub(super) enum Op {
     PushBack(usize),
@@ -26,4 +25,3 @@ impl quickcheck::Arbitrary for Op {
         }
     }
 }
-

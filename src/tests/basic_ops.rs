@@ -1,5 +1,5 @@
-use crate::*;
 use super::*;
+use crate::*;
 use quickcheck_macros::quickcheck;
 use std::collections::VecDeque;
 
@@ -14,14 +14,14 @@ fn basic_ops(ops: Vec<Op>) {
                 let trial_back = trial.back().map(|x| *x);
                 assert_eq!(oracle_back, trial_back);
                 let r = trial.pop_back();
-                assert_eq!(r, oracle_back.is_some());
+                assert_eq!(r.is_some(), oracle_back.is_some());
             }
             Op::PopFront => {
                 let oracle_front = oracle.pop_front();
                 let trial_front = trial.front().map(|x| *x);
                 assert_eq!(oracle_front, trial_front);
                 let r = trial.pop_front();
-                assert_eq!(r, oracle_front.is_some());
+                assert_eq!(r.is_some(), oracle_front.is_some());
             }
             Op::PushBack(n) => {
                 oracle.push_back(n);
@@ -35,19 +35,23 @@ fn basic_ops(ops: Vec<Op>) {
     }
     assert_eq!(trial.len(), oracle.len());
     {
-        let trial: VecDeque<_> = trial.iter().map(|x| x.get_ref().clone()).collect();
+        let trial: VecDeque<_> = trial.iter().map(|x| *x.get_ref()).collect();
         assert_eq!(trial, oracle);
     }
     {
-        let trial: VecDeque<_> = trial.iter_mut().map(|x| x.get_mut().clone()).collect();
+        let trial: VecDeque<_> = trial.iter_mut().map(|x| *x.get_mut()).collect();
         assert_eq!(trial, oracle);
     }
     {
-        let trial: VecDeque<_> = (0..trial.len()).map(|idx| trial.get(idx).unwrap().get_ref().clone()).collect();
+        let trial: VecDeque<_> = (0..trial.len())
+            .map(|idx| *trial.get(idx).unwrap().get_ref())
+            .collect();
         assert_eq!(trial, oracle);
     }
     {
-        let trial: VecDeque<_> = (0..trial.len()).map(|idx| trial.get_mut(idx).unwrap().get_mut().clone()).collect();
+        let trial: VecDeque<_> = (0..trial.len())
+            .map(|idx| *trial.get_mut(idx).unwrap().get_mut())
+            .collect();
         assert_eq!(trial, oracle);
     }
 }
@@ -65,8 +69,11 @@ fn drop_elems_0() {
         trial.pop_back();
         writeln!(&mut buf, "popped back.").unwrap();
     }
-    assert_eq!(buf, "0 is dropped.\
-        \npopped back.\n");
+    assert_eq!(
+        buf,
+        "0 is dropped.\
+        \npopped back.\n"
+    );
 }
 
 #[test]
@@ -85,9 +92,12 @@ fn drop_elems_1() {
         });
         writeln!(&mut buf, "deque is dropping.").unwrap();
     }
-    assert_eq!(buf, "deque is dropping.\
+    assert_eq!(
+        buf,
+        "deque is dropping.\
         \n0 is dropped.\
-        \n1 is dropped.\n");
+        \n1 is dropped.\n"
+    );
 }
 
 #[test]
@@ -103,8 +113,11 @@ fn clear() {
         trial.clear();
         writeln!(&mut buf, "cleared.").unwrap();
     }
-    assert_eq!(buf, "0 is dropped.\
-        \ncleared.\n");
+    assert_eq!(
+        buf,
+        "0 is dropped.\
+        \ncleared.\n"
+    );
 }
 
 struct A<W: std::fmt::Write> {
@@ -114,9 +127,7 @@ struct A<W: std::fmt::Write> {
 
 impl<W: std::fmt::Write> Drop for A<W> {
     fn drop(&mut self) {
-        let w = unsafe {
-            &mut *self.buf
-        };
+        let w = unsafe { &mut *self.buf };
         writeln!(w, "{} is dropped.", self.id).unwrap();
     }
 }
@@ -147,4 +158,3 @@ fn front_mut() {
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
     assert_eq!(trial, vec![1]);
 }
-

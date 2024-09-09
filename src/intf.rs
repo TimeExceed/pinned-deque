@@ -96,4 +96,3 @@ where
         self.extend(source.iter().map(|x| x.get_ref().clone()));
     }
 }
-

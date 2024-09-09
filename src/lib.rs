@@ -7,6 +7,8 @@ mod cmp;
 mod intf;
 mod iter;
 pub use self::iter::*;
+mod page;
+use self::page::*;
 
 #[cfg(test)]
 mod tests;
