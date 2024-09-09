@@ -1,7 +1,16 @@
 [package]
 name = "pinned-deque"
-version = "0.1.1"
+version = "0.1.0"
 edition = "2021"
+license-file = "LICENSE"
+description = """
+A fine-tuned double-ended queue, inspired by BOOST deque.
+Every element in this deque are pinned until their popping and dropping.
+"""
+repository = "https://github.com/TimeExceed/pinned-deque"
+readme = "README.md"
+categories = ["algorithms", "data-structures"]
+keywords = ["deque"]
 
 [[bench]]
 name = "benches"

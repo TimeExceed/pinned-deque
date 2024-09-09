@@ -1,7 +1,7 @@
 # Pinned Deque
 
 This is a double-ended queue, inspired by [BOOST deque](https://www.boost.org/doc/libs/1_60_0/doc/html/boost/container/deque.html) in the C++ world.
-Once an element is pushed into this queue, it will never move until it is dropped.
+Once an element is pushed into this queue, it will never move until it is popped.
 Like the BOOST counterpart, this deque also takes constant-time in indexing.
 
 ## Performance
