@@ -1,11 +1,11 @@
 [package]
 name = "pinned-deque"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license-file = "LICENSE"
 description = """
-A fine-tuned double-ended queue, inspired by BOOST deque.
-Every element in this deque are pinned until their popping and dropping.
+A high-performance double-ended queue, inspired by BOOST deque.
+Every element in this deque is pinned until its popping.
 """
 repository = "https://github.com/TimeExceed/pinned-deque"
 readme = "README.md"
@@ -17,6 +17,7 @@ name = "benches"
 harness = false
 
 [dependencies]
+page_size = "0.6.0"
 
 [dev-dependencies]
 criterion = "0.5"
@@ -24,3 +25,5 @@ jemallocator = "0.5"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
 
+# blist = "0.0.4"
+rblist = "0.1.0"

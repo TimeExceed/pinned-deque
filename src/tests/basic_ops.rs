@@ -6,19 +6,19 @@ use std::collections::VecDeque;
 #[quickcheck]
 fn basic_ops(ops: Vec<Op>) {
     let mut oracle = VecDeque::new();
-    let mut trial = PinnedDeque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     for op in ops.into_iter() {
         match op {
             Op::PopBack => {
                 let oracle_back = oracle.pop_back();
-                let trial_back = trial.back().map(|x| *x);
+                let trial_back = trial.back().copied();
                 assert_eq!(oracle_back, trial_back);
                 let r = trial.pop_back();
                 assert_eq!(r.is_some(), oracle_back.is_some());
             }
             Op::PopFront => {
                 let oracle_front = oracle.pop_front();
-                let trial_front = trial.front().map(|x| *x);
+                let trial_front = trial.front().copied();
                 assert_eq!(oracle_front, trial_front);
                 let r = trial.pop_front();
                 assert_eq!(r.is_some(), oracle_front.is_some());
@@ -35,22 +35,22 @@ fn basic_ops(ops: Vec<Op>) {
     }
     assert_eq!(trial.len(), oracle.len());
     {
-        let trial: VecDeque<_> = trial.iter().map(|x| *x.get_ref()).collect();
+        let trial: VecDeque<_> = trial.iter().map(|x| *x).collect();
         assert_eq!(trial, oracle);
     }
     {
-        let trial: VecDeque<_> = trial.iter_mut().map(|x| *x.get_mut()).collect();
+        let trial: VecDeque<_> = trial.iter_mut().map(|x| *x).collect();
         assert_eq!(trial, oracle);
     }
     {
         let trial: VecDeque<_> = (0..trial.len())
-            .map(|idx| *trial.get(idx).unwrap().get_ref())
+            .map(|idx| *trial.get(idx).unwrap())
             .collect();
         assert_eq!(trial, oracle);
     }
     {
         let trial: VecDeque<_> = (0..trial.len())
-            .map(|idx| *trial.get_mut(idx).unwrap().get_mut())
+            .map(|idx| *trial.get_mut(idx).unwrap())
             .collect();
         assert_eq!(trial, oracle);
     }
@@ -61,7 +61,7 @@ fn drop_elems_0() {
     let mut buf = String::new();
     {
         use std::fmt::Write;
-        let mut trial = PinnedDeque::<A<String>, 2>::new();
+        let mut trial = PinnedDeque::<A<String>>::with_capacity_per_chunk(2);
         trial.push_back(A {
             buf: &mut buf,
             id: "0".to_owned(),
@@ -81,7 +81,7 @@ fn drop_elems_1() {
     let mut buf = String::new();
     {
         use std::fmt::Write;
-        let mut trial = PinnedDeque::<A<String>, 2>::new();
+        let mut trial = PinnedDeque::<A<String>>::with_capacity_per_chunk(2);
         trial.push_back(A {
             buf: &mut buf,
             id: "0".to_owned(),
@@ -105,7 +105,7 @@ fn clear() {
     let mut buf = String::new();
     {
         use std::fmt::Write;
-        let mut trial = PinnedDeque::<A<String>, 2>::new();
+        let mut trial = PinnedDeque::<A<String>>::with_capacity_per_chunk(2);
         trial.push_back(A {
             buf: &mut buf,
             id: "0".to_owned(),
@@ -134,7 +134,7 @@ impl<W: std::fmt::Write> Drop for A<W> {
 
 #[test]
 fn get_mut() {
-    let mut trial = PinnedDeque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     *trial.get_mut(0).unwrap() = 1;
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
@@ -143,7 +143,7 @@ fn get_mut() {
 
 #[test]
 fn back_mut() {
-    let mut trial = PinnedDeque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     *trial.back_mut().unwrap() = 1;
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
@@ -152,9 +152,10 @@ fn back_mut() {
 
 #[test]
 fn front_mut() {
-    let mut trial = PinnedDeque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     *trial.front_mut().unwrap() = 1;
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
     assert_eq!(trial, vec![1]);
 }
+

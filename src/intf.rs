@@ -1,6 +1,6 @@
 use crate::*;
 
-impl<T, const CAP_PER_PAGE: usize> Default for PinnedDeque<T, CAP_PER_PAGE>
+impl<T> Default for PinnedDeque<T>
 where
     T: Sized,
 {
@@ -9,7 +9,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> std::fmt::Debug for PinnedDeque<T, CAP_PER_PAGE>
+impl<T> std::fmt::Debug for PinnedDeque<T>
 where
     T: Sized + std::fmt::Debug,
 {
@@ -27,7 +27,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> std::iter::Extend<T> for PinnedDeque<T, CAP_PER_PAGE>
+impl<T> std::iter::Extend<T> for PinnedDeque<T>
 where
     T: Sized,
 {
@@ -41,16 +41,16 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> From<&[T]> for PinnedDeque<T, CAP_PER_PAGE>
+impl<'a, T> From<&'a [T]> for PinnedDeque<&'a T>
 where
-    T: Sized + Clone,
+    T: Sized,
 {
-    fn from(value: &[T]) -> Self {
-        value.iter().cloned().collect()
+    fn from(value: &'a [T]) -> Self {
+        value.iter().collect()
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize, const N: usize> From<[T; N]> for PinnedDeque<T, CAP_PER_PAGE>
+impl<T, const N: usize> From<[T; N]> for PinnedDeque<T>
 where
     T: Sized,
 {
@@ -59,7 +59,7 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> From<Vec<T>> for PinnedDeque<T, CAP_PER_PAGE>
+impl<T> From<Vec<T>> for PinnedDeque<T>
 where
     T: Sized,
 {
@@ -68,14 +68,15 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> FromIterator<T> for PinnedDeque<T, CAP_PER_PAGE>
+impl<T> FromIterator<T> for PinnedDeque<T>
 where
     T: Sized,
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let iter = iter.into_iter();
         let (size_hint, _) = iter.size_hint();
-        let mut res = Self::with_capacity(size_hint);
+        let mut res = Self::new();
+        res.reserve(size_hint);
         for x in iter {
             res.push_back(x);
         }
@@ -83,16 +84,16 @@ where
     }
 }
 
-impl<T, const CAP_PER_PAGE: usize> Clone for PinnedDeque<T, CAP_PER_PAGE>
+impl<T> Clone for PinnedDeque<T>
 where
     T: Sized + Clone,
 {
     fn clone(&self) -> Self {
-        self.iter().map(|x| x.get_ref().clone()).collect()
+        self.iter().map(|x| x.clone()).collect()
     }
 
     fn clone_from(&mut self, source: &Self) {
         self.clear();
-        self.extend(source.iter().map(|x| x.get_ref().clone()));
+        self.extend(source.iter().map(|x| x.clone()));
     }
 }

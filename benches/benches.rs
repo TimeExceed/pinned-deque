@@ -1,3 +1,5 @@
+// Because blist fails to build since rust 1.79.0,
+// benchmarks about it is removed.
 use criterion::*;
 use pinned_deque::*;
 use std::{collections::*, time::*};
@@ -8,8 +10,6 @@ use jemallocator::Jemalloc;
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
-
-const CAP_PER_PAGE: usize = 1022; // For a 4KB page, 510 u64's are allowed.
 
 fn push_back(c: &mut Criterion) {
     let plot_config = PlotConfiguration::default().summary_scale(AxisScale::Logarithmic);
@@ -24,14 +24,14 @@ fn push_back(c: &mut Criterion) {
         10_000_000usize,
     ];
     for n in SIZES.iter() {
-        group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n, |b, i| {
+        let n = *n as u64;
+        group.bench_function(BenchmarkId::new("PinnedDeque", n), |b| {
             b.iter_custom(|iters| {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
-                    let mut trial = PinnedDeque::<u64, CAP_PER_PAGE>::new();
-                    let i = *i as u64;
+                    let mut trial = PinnedDeque::<u64>::new();
                     let start = Instant::now();
-                    for x in 0..i {
+                    for x in 0..n {
                         trial.push_back(x);
                     }
                     res += start.elapsed();
@@ -39,14 +39,13 @@ fn push_back(c: &mut Criterion) {
                 res
             })
         });
-        group.bench_with_input(BenchmarkId::new("VecDeque", n), n, |b, i| {
+        group.bench_function(BenchmarkId::new("VecDeque", n), |b| {
             b.iter_custom(|iters| {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
                     let mut trial = VecDeque::<u64>::new();
-                    let i = *i as u64;
                     let start = Instant::now();
-                    for x in 0..i {
+                    for x in 0..n {
                         trial.push_back(x);
                     }
                     res += start.elapsed();
@@ -54,14 +53,13 @@ fn push_back(c: &mut Criterion) {
                 res
             })
         });
-        group.bench_with_input(BenchmarkId::new("Vec", n), n, |b, i| {
+        group.bench_function(BenchmarkId::new("Vec", n), |b| {
             b.iter_custom(|iters| {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
                     let mut trial = Vec::<u64>::new();
-                    let i = *i as u64;
                     let start = Instant::now();
-                    for x in 0..i {
+                    for x in 0..n {
                         trial.push(x);
                     }
                     res += start.elapsed();
@@ -69,6 +67,22 @@ fn push_back(c: &mut Criterion) {
                 res
             })
         });
+        if n <= 1_000_000 {
+            group.bench_function(BenchmarkId::new("rblist", n), |b| {
+                b.iter_custom(|iters| {
+                    let mut res = Duration::ZERO;
+                    for _ in 0..iters {
+                        let mut trial = rblist::BList::<u64>::new(rblist::Scale::Huge);
+                        let start = Instant::now();
+                        for x in 0..n {
+                            trial.push_back(x).unwrap();
+                        }
+                        res += start.elapsed();
+                    }
+                    res
+                })
+            });
+        }
     }
     group.finish();
 }
@@ -86,13 +100,14 @@ fn push_front(c: &mut Criterion) {
         10_000_000usize,
     ];
     for n in SIZES.iter() {
-        group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n, |b, i| {
+        let n = *n as u64;
+        group.bench_function(BenchmarkId::new("PinnedDeque", n), |b| {
             b.iter_custom(|iters| {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
-                    let mut trial = PinnedDeque::<u64, CAP_PER_PAGE>::new();
+                    let mut trial = PinnedDeque::<u64>::new();
                     let start = Instant::now();
-                    for _ in 0..*i {
+                    for _ in 0..n {
                         trial.push_front(0);
                     }
                     res += start.elapsed();
@@ -100,13 +115,13 @@ fn push_front(c: &mut Criterion) {
                 res
             })
         });
-        group.bench_with_input(BenchmarkId::new("VecDeque", n), n, |b, i| {
+        group.bench_function(BenchmarkId::new("VecDeque", n), |b| {
             b.iter_custom(|iters| {
                 let mut res = Duration::ZERO;
                 for _ in 0..iters {
                     let mut trial = VecDeque::<u64>::new();
                     let start = Instant::now();
-                    for _ in 0..*i {
+                    for _ in 0..n {
                         trial.push_front(0);
                     }
                     res += start.elapsed();
@@ -114,6 +129,22 @@ fn push_front(c: &mut Criterion) {
                 res
             })
         });
+        if n <= 1_000_000 {
+            group.bench_function(BenchmarkId::new("rblist", n), |b| {
+                b.iter_custom(|iters| {
+                    let mut res = Duration::ZERO;
+                    for _ in 0..iters {
+                        let mut trial = rblist::BList::<u64>::new(rblist::Scale::Huge);
+                        let start = Instant::now();
+                        for _ in 0..n {
+                            trial.push_front(0).unwrap();
+                        }
+                        res += start.elapsed();
+                    }
+                    res
+                })
+            });
+        }
     }
     group.finish();
 }
@@ -131,21 +162,21 @@ fn get_mid(c: &mut Criterion) {
     ]
     .iter()
     {
-        let pinned: PinnedDeque<u64, CAP_PER_PAGE> = (0..*n).map(|x| x as u64).collect();
+        let pinned: PinnedDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vecdeque: VecDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vec: Vec<u64> = (0..*n).map(|x| x as u64).collect();
         let mid_idx = *n / 2;
-        group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("PinnedDeque", n), |b| {
             b.iter(|| {
                 black_box(pinned.get(mid_idx));
             })
         });
-        group.bench_with_input(BenchmarkId::new("VecDeque", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("VecDeque", n), |b| {
             b.iter(|| {
                 black_box(vecdeque.get(mid_idx));
             })
         });
-        group.bench_with_input(BenchmarkId::new("Vec", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("Vec", n), |b| {
             b.iter(|| {
                 black_box(vec.get(mid_idx));
             })
@@ -167,27 +198,41 @@ fn iter(c: &mut Criterion) {
     ]
     .iter()
     {
-        let pinned: PinnedDeque<u64, CAP_PER_PAGE> = (0..*n).map(|x| x as u64).collect();
+        let pinned: PinnedDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vecdeque: VecDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vec: Vec<u64> = (0..*n).map(|x| x as u64).collect();
-        group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n, |b, _| {
+        let rblist = {
+            let mut rblist = rblist::BList::<u64>::new(rblist::Scale::Huge);
+            for x in 0..*n {
+                rblist.push_back(x as u64).unwrap();
+            }
+            rblist
+        };
+        group.bench_function(BenchmarkId::new("PinnedDeque", n), |b| {
             b.iter(|| {
                 for x in pinned.iter() {
                     black_box(x);
                 }
             })
         });
-        group.bench_with_input(BenchmarkId::new("VecDeque", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("VecDeque", n), |b| {
             b.iter(|| {
                 for x in vecdeque.iter() {
                     black_box(x);
                 }
             })
         });
-        group.bench_with_input(BenchmarkId::new("Vec", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("Vec", n), |b| {
             b.iter(|| {
                 for x in vec.iter() {
                     black_box(x);
+                }
+            })
+        });
+        group.bench_function(BenchmarkId::new("rblist", n), |b| {
+            b.iter(|| {
+                for x in rblist.iter() {
+                    black_box(x.value().unwrap());
                 }
             })
         });
@@ -208,26 +253,26 @@ fn iter_backwards(c: &mut Criterion) {
     ]
     .iter()
     {
-        let pinned: PinnedDeque<u64, CAP_PER_PAGE> = (0..*n).map(|x| x as u64).collect();
+        let pinned: PinnedDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vecdeque: VecDeque<u64> = (0..*n).map(|x| x as u64).collect();
         let vec: Vec<u64> = (0..*n).map(|x| x as u64).collect();
-        group.bench_with_input(BenchmarkId::new("PinnedDeque", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("PinnedDeque", n), |b| {
             b.iter(|| {
-                for x in pinned.iter() {
+                for x in pinned.iter().rev() {
                     black_box(x);
                 }
             })
         });
-        group.bench_with_input(BenchmarkId::new("VecDeque", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("VecDeque", n), |b| {
             b.iter(|| {
-                for x in vecdeque.iter() {
+                for x in vecdeque.iter().rev() {
                     black_box(x);
                 }
             })
         });
-        group.bench_with_input(BenchmarkId::new("Vec", n), n, |b, _| {
+        group.bench_function(BenchmarkId::new("Vec", n), |b| {
             b.iter(|| {
-                for x in vec.iter() {
+                for x in vec.iter().rev() {
                     black_box(x);
                 }
             })

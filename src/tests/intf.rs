@@ -5,7 +5,11 @@ use std::collections::*;
 #[quickcheck]
 fn debug(a: Vec<usize>) {
     let oracle: VecDeque<_> = a.iter().copied().collect();
-    let trial: PinnedDeque<_, 2> = a.iter().copied().collect();
+    let trial = {
+        let mut res = PinnedDeque::<usize>::with_capacity_per_chunk(2);
+        res.extend(a.iter().copied());
+        res
+    };
     assert_eq!(format!("{trial:?}"), format!("{oracle:?}"));
 }
 
@@ -17,7 +21,8 @@ fn extend(a: Vec<usize>, b: Vec<usize>) {
         oracle
     };
     let trial = {
-        let mut trial: PinnedDeque<_, 2> = a.iter().copied().collect();
+        let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
+        trial.extend(a.iter().copied());
         trial.extend(b.iter().copied());
         trial
     };
@@ -26,25 +31,25 @@ fn extend(a: Vec<usize>, b: Vec<usize>) {
 
 #[quickcheck]
 fn from_slice_ref(a: Vec<usize>) {
-    let trial: PinnedDeque<usize, 2> = a.as_slice().into();
+    let trial: PinnedDeque<_> = a.as_slice().into();
     assert_eq!(format!("{trial:?}"), format!("{a:?}"));
 }
 
 #[test]
 fn from_slice() {
-    let trial: PinnedDeque<_, 2> = [1, 2, 3].into();
+    let trial: PinnedDeque<_> = [1, 2, 3].into();
     assert_eq!(format!("{trial:?}"), "[1, 2, 3]");
 }
 
 #[quickcheck]
 fn from_vec(a: Vec<usize>) {
-    let trial: PinnedDeque<_, 2> = a.clone().into();
+    let trial: PinnedDeque<_> = a.clone().into();
     assert_eq!(format!("{trial:?}"), format!("{a:?}"));
 }
 
 #[test]
 fn clone() {
-    let origin: PinnedDeque<A, 2> = [A("origin".to_owned())].into();
+    let origin: PinnedDeque<A> = [A("origin".to_owned())].into();
     let cloned = origin.clone();
     assert_eq!(format!("{cloned:?}"), "[cloned_origin]");
 }
@@ -61,4 +66,11 @@ impl std::fmt::Debug for A {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
+}
+
+#[test]
+fn fromiter() {
+    let oracle = vec![1, 2, 3];
+    let trial: PinnedDeque<_> = oracle.clone().into_iter().collect();
+    assert_eq!(format!("{trial:?}"), format!("{oracle:?}"));
 }

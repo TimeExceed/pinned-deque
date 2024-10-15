@@ -5,12 +5,12 @@ use std::collections::VecDeque;
 
 #[test]
 fn itermut_mutability() {
-    let mut trial = PinnedDeque::<usize, 2>::new();
+    let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     trial.push_back(1);
     trial.push_back(2);
     trial.iter_mut().for_each(|x| {
-        *x.get_mut() = *x * 2;
+        *x *= 2;
     });
     let trial: Vec<_> = trial.iter().map(|x| *x).collect();
     assert_eq!(trial, vec![0, 2, 4]);
@@ -170,6 +170,16 @@ fn itermut_size_hint(ops: Vec<Op>) {
     assert_eq!(trial_size_hints, oracle_size_hints);
 }
 
+#[quickcheck]
+fn intoiter(ops: Vec<Op>) {
+    let oracle = ops_to_oracle(&ops);
+    let trial: VecDeque<_> = {
+        let trial = ops_to_trial(&ops);
+        trial.into_iter().collect()
+    };
+    assert_eq!(trial, oracle);
+}
+
 fn ops_to_oracle(ops: &[Op]) -> VecDeque<usize> {
     let mut res = VecDeque::new();
     for op in ops.iter() {
@@ -191,8 +201,8 @@ fn ops_to_oracle(ops: &[Op]) -> VecDeque<usize> {
     res
 }
 
-fn ops_to_trial(ops: &[Op]) -> PinnedDeque<usize, 2> {
-    let mut res = PinnedDeque::new();
+fn ops_to_trial(ops: &[Op]) -> PinnedDeque<usize> {
+    let mut res = PinnedDeque::with_capacity_per_chunk(2);
     for op in ops.iter() {
         match op {
             Op::PopBack => {
