@@ -103,7 +103,7 @@ impl<T: Sized> Iterator for IntoIter<T> {
     }
 }
 
-impl<'a, T> DoubleEndedIterator for Iter<'a, T>
+impl<T> DoubleEndedIterator for Iter<'_, T>
 where
     T: Sized,
 {
@@ -132,7 +132,7 @@ where
     }
 }
 
-impl<'a, T> DoubleEndedIterator for IterMut<'a, T>
+impl<T> DoubleEndedIterator for IterMut<'_, T>
 where
     T: Sized,
 {
@@ -167,9 +167,9 @@ impl<T: Sized> DoubleEndedIterator for IntoIter<T> {
     }
 }
 
-impl<'a, T: Sized> ExactSizeIterator for Iter<'a, T> {}
+impl<T: Sized> ExactSizeIterator for Iter<'_, T> {}
 
-impl<'a, T: Sized> ExactSizeIterator for IterMut<'a, T> {}
+impl<T: Sized> ExactSizeIterator for IterMut<'_, T> {}
 
 impl<T: Sized> ExactSizeIterator for IntoIter<T> {}
 

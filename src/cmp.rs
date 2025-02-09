@@ -15,7 +15,7 @@ where
             let Some(b) = it_b.next() else {
                 break;
             };
-            let cmp = a.partial_cmp(&b);
+            let cmp = a.partial_cmp(b);
             if !matches!(cmp, Some(Ordering::Equal)) {
                 return cmp;
             }
@@ -46,7 +46,7 @@ where
             let Some(b) = it_b.next() else {
                 break;
             };
-            let eq = a.eq(&b);
+            let eq = a.eq(b);
             if !eq {
                 return false;
             }

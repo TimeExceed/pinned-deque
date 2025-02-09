@@ -46,7 +46,7 @@ where
     /// Reserves additional capacity in order to avoid memory allocations then.
     pub fn reserve(&mut self, additional: usize) {
         let cap_per_chunk = self.cap_per_chunk as usize;
-        let n = (additional + cap_per_chunk - 1) / cap_per_chunk;
+        let n = additional.div_ceil(cap_per_chunk);
         if n > self.freed.len() {
             for _ in self.freed.len()..n {
                 self.freed.push(Chunk::<T>::new(self.layout));

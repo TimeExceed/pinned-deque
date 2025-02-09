@@ -35,7 +35,7 @@ fn basic_ops(ops: Vec<Op>) {
     }
     assert_eq!(trial.len(), oracle.len());
     {
-        let trial: VecDeque<_> = trial.iter().map(|x| *x).collect();
+        let trial: VecDeque<_> = trial.iter().copied().collect();
         assert_eq!(trial, oracle);
     }
     {
@@ -120,6 +120,33 @@ fn clear() {
     );
 }
 
+#[test]
+fn clear_1() {
+    let mut buf = String::new();
+    {
+        use std::fmt::Write;
+        let mut trial = PinnedDeque::<A<String>>::with_capacity_per_chunk(2);
+        trial.push_back(A {
+            buf: &mut buf,
+            id: "0".to_owned(),
+        });
+        trial.push_back(A {
+            buf: &mut buf,
+            id: "1".to_owned(),
+        });
+        let _ = trial.pop_front();
+        writeln!(&mut buf, "clear").unwrap();
+        trial.clear();
+    }
+    assert_eq!(
+        buf,
+        "0 is dropped.\
+        \nclear\
+        \n1 is dropped.\
+        \n"
+    );
+}
+
 struct A<W: std::fmt::Write> {
     buf: *mut W,
     id: String,
@@ -137,7 +164,7 @@ fn get_mut() {
     let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     *trial.get_mut(0).unwrap() = 1;
-    let trial: Vec<_> = trial.iter().map(|x| *x).collect();
+    let trial: Vec<_> = trial.iter().copied().collect();
     assert_eq!(trial, vec![1]);
 }
 
@@ -146,7 +173,7 @@ fn back_mut() {
     let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     *trial.back_mut().unwrap() = 1;
-    let trial: Vec<_> = trial.iter().map(|x| *x).collect();
+    let trial: Vec<_> = trial.iter().copied().collect();
     assert_eq!(trial, vec![1]);
 }
 
@@ -155,7 +182,6 @@ fn front_mut() {
     let mut trial = PinnedDeque::<usize>::with_capacity_per_chunk(2);
     trial.push_back(0);
     *trial.front_mut().unwrap() = 1;
-    let trial: Vec<_> = trial.iter().map(|x| *x).collect();
+    let trial: Vec<_> = trial.iter().copied().collect();
     assert_eq!(trial, vec![1]);
 }
-

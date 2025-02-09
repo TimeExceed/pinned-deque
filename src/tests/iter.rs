@@ -12,7 +12,7 @@ fn itermut_mutability() {
     trial.iter_mut().for_each(|x| {
         *x *= 2;
     });
-    let trial: Vec<_> = trial.iter().map(|x| *x).collect();
+    let trial: Vec<_> = trial.iter().copied().collect();
     assert_eq!(trial, vec![0, 2, 4]);
 }
 

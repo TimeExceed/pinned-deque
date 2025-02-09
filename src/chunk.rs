@@ -127,7 +127,7 @@ impl<T: Sized> Chunk<T> {
     pub(crate) fn drop_all(&mut self) {
         debug_assert!(self.start <= self.end);
         let mut ptr: *mut _ = self.inner_get_mut(self.start);
-        let end = ptr.wrapping_add(self.end as usize);
+        let end: *mut _ = self.inner_get_mut(self.end);
         while ptr < end {
             unsafe {
                 let obj: &mut _ = &mut *ptr;

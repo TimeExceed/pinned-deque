@@ -89,11 +89,11 @@ where
     T: Sized + Clone,
 {
     fn clone(&self) -> Self {
-        self.iter().map(|x| x.clone()).collect()
+        self.iter().cloned().collect()
     }
 
     fn clone_from(&mut self, source: &Self) {
         self.clear();
-        self.extend(source.iter().map(|x| x.clone()));
+        self.extend(source.iter().cloned());
     }
 }
